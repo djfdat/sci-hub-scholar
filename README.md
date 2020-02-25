@@ -23,7 +23,7 @@ Features
 6. If found, update href to use Sci-Hub URL
 
 # Useful Links
-https://github.com/CrossRef/rest-api-doc
-https://en.wikipedia.org/wiki/Sci-Hub
-https://whereisscihub.now.sh/
-https://news.ycombinator.com/item?id=22409674
+- https://github.com/CrossRef/rest-api-doc
+- https://en.wikipedia.org/wiki/Sci-Hub
+- https://whereisscihub.now.sh/
+- https://news.ycombinator.com/item?id=22409674
