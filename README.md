@@ -5,7 +5,9 @@ Firefox Extension to automatically modify Google Scholar links to point to Sci-H
 Features
 
 - [Planned] Whitelist for allowing links to certain website
-- [Planned] Support Rate Limiting and other CrossRef Good Citizen features
+- [Planned] Support Rate CrossRef Good Citizen features
+ - Rate Limiting
+ - Caching
 - [Planned] Support checking multiple Sci-Hub URLs
  - Provide setting for trying one at a time or all at once?
 - [Planned] Display Visual Indicator for link status on Google Scholar
@@ -17,8 +19,8 @@ Features
 
 1. When a Google Scholar search results page opens
 2. Parse each article link
-3. If destination website is in whitelist, skip
-4. Lookup DOI on CrossRef using article name
+3. If destination website is in whitelist, skip remaining
+4. Lookup DOI on CrossRef using article name. If cached, check cache validation date and use or rerun
 5. If found, Lookup Sci-Hub current URL using Wikipedia or https://whereisscihub.now.sh/
 6. If found, update href to use Sci-Hub URL
 
