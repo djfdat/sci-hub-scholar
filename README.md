@@ -13,7 +13,10 @@ Features
 - [Planned] Display Visual Indicator for link status on Google Scholar
   - States: Whitelisted, Searching, Updated, Failed
   - Hover over indicator should display more info for each state
-  
+- [Planned] Settings
+ - Whitelist
+ - Number of Sci-Hub mirrors to try at once (default: 1)
+ - Use Anonymous CrossRef (will increase Rate Limiting)
 
 # How it works
 
