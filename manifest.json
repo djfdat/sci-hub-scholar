@@ -1,0 +1,27 @@
+{
+
+  "manifest_version": 2,
+  "name": "Sci-Hub Scholar",
+  "version": "1.0",
+
+  "description": "Modifies search result links from Google Scholar to Sci-Hub pages",
+
+  "icons": {
+    "48": "icons/border-48.png"
+  },
+
+  "permissions": [
+    "*://api.crossref.org/works?query=*",
+    "webRequest"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.scholar.google.com/scholar?*"
+      ],
+      "js": ["sci-hub-scholar.js"]
+    }
+  ]
+
+}
