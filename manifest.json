@@ -5,14 +5,15 @@
   "version": "1.0",
 
   "description": "Modifies search result links from Google Scholar to Sci-Hub pages",
-
+  
   "icons": {
     "48": "icons/border-48.png"
   },
 
   "permissions": [
     "*://api.crossref.org/works?query=*",
-    "webRequest"
+    "webRequest",
+    "storage"
   ],
 
   "content_scripts": [

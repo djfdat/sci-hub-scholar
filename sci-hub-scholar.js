@@ -27,48 +27,50 @@ const IMG_STATUS = {
 }
 
 const collectedLinks = document.querySelectorAll('h3>a')
-print(collectedLinks)
 collectedLinks.forEach(element => {
-	fetch(CROSSREF_QUERY(element.innerText))
-	.then((response) => response.json())
-	.then((data) => {
-		if (data.status == 'ok') {
-			// print(data)
+	const statusIcon = document.createElement("img")
+	statusIcon.width = 18
+	statusIcon.height = 18
+	element.insertAdjacentElement("beforebegin", statusIcon)
+	SetStatusIcon(element, IMG_STATUS.SEARCHING)
 
-			statusIcon = document.createElement("img")
-			element.insertAdjacentElement("beforebegin", statusIcon)
-
-			SetStatusIcon(statusIcon, IMG_STATUS.SEARCHING)
-
-			checkObject = data.message.items[0]
-			if (checkObject.title.toString().toLowerCase() == element.innerText.toString().toLowerCase()) {
-				// print("_______________")
-				// print("Match found")
-				// print(checkObject.title.toString().toLowerCase())
-				// print(element.href)
-				// print("DOI: " + checkObject.DOI)
-
-				// print("_______________")
-
-				element.href = SCIHUB_QUERY + checkObject.DOI
-				print(element.href)
-
-				SetStatusIcon(statusIcon, IMG_STATUS.SUCCESS)
-			}
-			else {
-				SetStatusIcon(statusIcon, IMG_STATUS.NO_DOI)
-			}
+	const title = element.innerText.toString().toLowerCase()
+	browser.storage.local.get(title)
+	.then((result) => {
+		if (Object.keys(result).length > 0) {
+			element.href = SCIHUB_QUERY + result[title]
+			SetStatusIcon(element, IMG_STATUS.SUCCESS)
+		}
+		else {
+			fetch(CROSSREF_QUERY(title))
+			.then((response) => response.json())
+			.then((data) => {
+				if (data.status == 'ok') {
+					checkObject = data.message.items[0]
+					if (checkObject.title.toString().toLowerCase() == title) {
+						element.href = SCIHUB_QUERY + checkObject.DOI
+						SetStatusIcon(element, IMG_STATUS.SUCCESS)
+		
+						var setObj = new Object()
+						setObj[title] = checkObject.DOI
+						browser.storage.local.set(setObj)
+					}
+					else {
+						SetStatusIcon(element, IMG_STATUS.NO_DOI)
+					}
+				}
+			})
+			.catch((error) => {
+				console.error('Error:', error);
+			});
 		}
 	})
-	.catch((error) => {
-		console.error('Error:', error);
-	});
 	return
 });
 
 function SetStatusIcon(element, status) {
-	element.src = status.src
-	element.title = status.title
+	element.previousElementSibling.src = status.src
+	element.previousElementSibling.title = status.title
 }
 
 function CROSSREF_QUERY(searchQuery) {
