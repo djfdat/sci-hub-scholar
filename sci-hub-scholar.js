@@ -75,7 +75,7 @@ function SetStatusIcon(element, status) {
 
 function CROSSREF_QUERY(searchQuery) {
 	const CROSSREF_QUERY_PREFIX = 'https://api.crossref.org/works?query='
-	const CROSSREF_QUERY_SUFFIX = "&rows=1&select=DOI,title"
+	const CROSSREF_QUERY_SUFFIX = "&rows=1&select=DOI,title&mailto=djfdat+scihubscholar@gmail.org"
 
 	return "" + CROSSREF_QUERY_PREFIX + searchQuery + CROSSREF_QUERY_SUFFIX
 }
