@@ -11,7 +11,7 @@ Features
 - [Planned] Support checking multiple Sci-Hub URLs
  - Provide setting for trying one at a time or all at once?
 - [Planned] Display Visual Indicator for link status on Google Scholar
-  - States: Whitelisted, Searching, Updated, Failed
+  - States: Whitelisted, Searching, DOI Not Found, Sci-Hub Article Not Found, Success
   - Hover over indicator should display more info for each state
 - [Planned] Settings
  - Whitelist
