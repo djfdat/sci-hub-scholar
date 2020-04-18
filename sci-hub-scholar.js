@@ -1,56 +1,62 @@
-print = console.log
-const CROSSREF_QUERY = 'https://api.crossref.org/works?query='
+print = console.log // Because no one ever wants to print
+
 const SCIHUB_QUERY = 'https://www.sci-hub.tw/'
 
-// document.body.style.border = "5px solid red";
+// Whitelisted, Searching, DOI Not Found, Sci-Hub Article Not Found, Success
+const IMG_STATUS = {
+	SEARCHING: {
+		src: browser.extension.getURL("icons/refresh.svg"),
+		title: "Processing article."
+	},
+	WHITELISTED: {
+		src: browser.extension.getURL("icons/award.svg"),
+		title: "This website for this article was found in the whitelist."
+	},
+	NO_DOI: {
+		src: browser.extension.getURL("icons/ban.svg"),
+		title: "This article did not return a valid DOI."
+	},
+	NO_ARTICLE: {
+		src: browser.extension.getURL("icons/ban.svg"),
+		title: "This article was not found on Sci-Hub."
+	},
+	SUCCESS: {
+		src: browser.extension.getURL("icons/book.svg"),
+		title: "This article was found on Sci-Hub, and the link has been updated."
+	},
+}
 
 const collectedLinks = document.querySelectorAll('h3>a')
-// print(collectedLinks)
+print(collectedLinks)
 collectedLinks.forEach(element => {
-	// print(CROSSREF_QUERY + element.innerText)
-	const url = CROSSREF_QUERY + element.innerText
-	fetch(url)
+	fetch(CROSSREF_QUERY(element.innerText))
 	.then((response) => response.json())
 	.then((data) => {
-		// print('Success:', data);
-		// print(data.status)
 		if (data.status == 'ok') {
-			// print(url)
-			print(data)
+			// print(data)
+
 			statusIcon = document.createElement("img")
-			// statusIcon.src = browser.extension.getURL("icons/alert-circle.svg")
-			// statusIcon.style.color = "orange"
-			// statusIcon.style.fill = "orange"
-			// statusIcon.style.stroke = "orange"
 			element.insertAdjacentElement("beforebegin", statusIcon)
-			// element.appendChild(statusIcon)
+
+			SetStatusIcon(statusIcon, IMG_STATUS.SEARCHING)
+
 			checkObject = data.message.items[0]
 			if (checkObject.title.toString().toLowerCase() == element.innerText.toString().toLowerCase()) {
-				print("_______________")
-				print("Match found")
-				print(checkObject.title.toString().toLowerCase())
-				// print(element.innerText.toString().toLowerCase())
-				print(element.href)
-				print("DOI: " + checkObject.DOI)
-				print("_______________")
-				element.style.border = "2px solid blue";
+				// print("_______________")
+				// print("Match found")
+				// print(checkObject.title.toString().toLowerCase())
+				// print(element.href)
+				// print("DOI: " + checkObject.DOI)
+
+				// print("_______________")
+
 				element.href = SCIHUB_QUERY + checkObject.DOI
-				statusIcon.src = browser.extension.getURL("icons/check.svg")
-				// statusIcon.style.color = "green"
-				// statusIcon.style.fill = "green"
-				// statusIcon.style.stroke = "green"
+				print(element.href)
+
+				SetStatusIcon(statusIcon, IMG_STATUS.SUCCESS)
 			}
 			else {
-				// print("_______________")
-				// print("Match not found")
-				// print(checkObject.title.toString().toLowerCase())
-				// print(element.innerText.toString().toLowerCase())
-				// print("_______________")
-				element.style.border = "2px solid red";
-				statusIcon.src = browser.extension.getURL("icons/x.svg")
-				// statusIcon.style.color = "red"
-				// statusIcon.style.fill = "red"
-				// statusIcon.style.stroke = "red"
+				SetStatusIcon(statusIcon, IMG_STATUS.NO_DOI)
 			}
 		}
 	})
@@ -59,3 +65,15 @@ collectedLinks.forEach(element => {
 	});
 	return
 });
+
+function SetStatusIcon(element, status) {
+	element.src = status.src
+	element.title = status.title
+}
+
+function CROSSREF_QUERY(searchQuery) {
+	const CROSSREF_QUERY_PREFIX = 'https://api.crossref.org/works?query='
+	const CROSSREF_QUERY_SUFFIX = "&rows=1&select=DOI,title"
+
+	return "" + CROSSREF_QUERY_PREFIX + searchQuery + CROSSREF_QUERY_SUFFIX
+}
