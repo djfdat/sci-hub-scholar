@@ -1,10 +1,14 @@
 {
 	"manifest_version": 2,
 	"name": "Sci-Hub Scholar",
-	"version": "1.0",
-
+	"short_name": "SciHubScholar",
 	"description": "Modifies search result links from Google Scholar to Sci-Hub pages",
+	"default_locale": "en",
+	"homepage_url": "https://github.com/djfdat/sci-hub-scholar",
+	"version": "1.0",
 	
+	"incognito": "spanning",
+
 	"icons": {
 		"48": "logo/ScrollsAndBooks_08_t.png",
 		"96": "logo/ScrollsAndBooks_08_t.png"
