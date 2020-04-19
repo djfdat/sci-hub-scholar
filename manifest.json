@@ -1,28 +1,35 @@
 {
+	"manifest_version": 2,
+	"name": "Sci-Hub Scholar",
+	"version": "1.0",
 
-  "manifest_version": 2,
-  "name": "Sci-Hub Scholar",
-  "version": "1.0",
+	"description": "Modifies search result links from Google Scholar to Sci-Hub pages",
+	
+	"icons": {
+		"48": "logo/ScrollsAndBooks_08_t.png",
+		"96": "logo/ScrollsAndBooks_08_t.png"
+	},
 
-  "description": "Modifies search result links from Google Scholar to Sci-Hub pages",
-  
-  "icons": {
-    "48": "icons/border-48.png"
-  },
+	"web_accessible_resources": [
+		"icons/refresh.svg",
+		"icons/award.svg",
+		"icons/ban.svg",
+		"icons/ban.svg",
+		"icons/book.svg"
+	],
 
-  "permissions": [
-    "*://api.crossref.org/works?query=*",
-    "webRequest",
-    "storage"
-  ],
+	"permissions": [
+		"*://api.crossref.org/works?query=*",
+		"webRequest",
+		"storage"
+	],
 
-  "content_scripts": [
-    {
-      "matches": [
-        "*://*.scholar.google.com/scholar?*"
-      ],
-      "js": ["sci-hub-scholar.js"]
-    }
-  ]
-
+	"content_scripts": [
+		{
+			"matches": [
+				"*://*.scholar.google.com/scholar?*"
+			],
+			"js": ["sci-hub-scholar.js"]
+		}
+	]
 }
