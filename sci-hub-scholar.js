@@ -79,3 +79,7 @@ function CROSSREF_QUERY(searchQuery) {
 
 	return "" + CROSSREF_QUERY_PREFIX + searchQuery + CROSSREF_QUERY_SUFFIX
 }
+
+// Use this to get urls for Sci-Hub
+// https://en.wikipedia.org/wiki/Sci-Hub
+// document.querySelectorAll('td.url>a').forEach(function(e) {console.log(e.origin)})
