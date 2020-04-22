@@ -26,8 +26,7 @@ const IMG_STATUS = {
 	},
 }
 
-const collectedLinks = document.querySelectorAll('h3>a')
-collectedLinks.forEach(element => {
+document.querySelectorAll('h3>a').forEach(element => {
 	const statusIcon = document.createElement("img")
 	statusIcon.width = 18
 	statusIcon.height = 18
