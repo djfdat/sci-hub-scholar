@@ -4,13 +4,13 @@
 	"short_name": "SciHubScholar",
 	"description": "Modifies search result links from Google Scholar to Sci-Hub pages",
 	"homepage_url": "https://github.com/djfdat/sci-hub-scholar",
-	"version": "1.0",
+	"version": "1.0.1",
 
 	"incognito": "spanning",
 
 	"icons": {
-		"48": "logo/ScrollsAndBooks_08_t.png",
-		"96": "logo/ScrollsAndBooks_08_t.png"
+		"48": "icons/book.svg",
+		"96": "icons/book.svg"
 	},
 
 	"web_accessible_resources": [
@@ -22,7 +22,8 @@
 	],
 
 	"permissions": [
-		"*://api.crossref.org/works?query=*",
+		"https://api.crossref.org/works?query=*",
+		"https://en.wikipedia.org/wiki/Sci-Hub",
 		"webRequest",
 		"storage"
 	],

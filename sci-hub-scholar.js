@@ -1,7 +1,5 @@
 print = console.log // Because no one ever wants to print
 
-const SCIHUB_QUERY = 'https://www.sci-hub.tw/'
-
 // Whitelisted, Searching, DOI Not Found, Sci-Hub Article Not Found, Success
 const IMG_STATUS = {
 	SEARCHING: {
@@ -26,6 +24,35 @@ const IMG_STATUS = {
 	},
 }
 
+const WIKIPEDIA_PAGE = "https://en.wikipedia.org/wiki/Sci-Hub"
+
+let SCIHUB_QUERY = "https://sci-hub.tw/"
+
+fetch(WIKIPEDIA_PAGE)
+.then(response => response.text())
+.then(data => {
+	const parser = new DOMParser()
+	// print(data)
+	const doc = parser.parseFromString(data, "text/html")
+	const results = doc.querySelectorAll('td.url>span.url>a')
+	return results[0].host
+})
+.then(host => {
+	SCIHUB_QUERY = "https://" + host
+	print(host)
+	document.querySelectorAll('h3>a').forEach(element => {
+		print(element)
+		if (element.host.includes("sci-hub") &&
+				element.host != host) {
+			print("mismatch: ", host, element.host)
+			element.host = host
+		}
+	})
+})
+.catch(error => {
+	console.error("Error: ", error)
+})
+
 document.querySelectorAll('h3>a').forEach(element => {
 	const statusIcon = document.createElement("img")
 	statusIcon.width = 18
@@ -42,14 +69,14 @@ document.querySelectorAll('h3>a').forEach(element => {
 		}
 		else {
 			fetch(CROSSREF_QUERY(title))
-			.then((response) => response.json())
-			.then((data) => {
+			.then(response => response.json())
+			.then(data => {
 				if (data.status == 'ok') {
 					checkObject = data.message.items[0]
 					if (checkObject.title.toString().toLowerCase() == title) {
 						element.href = SCIHUB_QUERY + checkObject.DOI
 						SetStatusIcon(element, IMG_STATUS.SUCCESS)
-		
+
 						var setObj = new Object()
 						setObj[title] = checkObject.DOI
 						browser.storage.local.set(setObj)
@@ -59,9 +86,6 @@ document.querySelectorAll('h3>a').forEach(element => {
 					}
 				}
 			})
-			.catch((error) => {
-				console.error('Error:', error);
-			});
 		}
 	})
 	return
@@ -78,7 +102,3 @@ function CROSSREF_QUERY(searchQuery) {
 
 	return "" + CROSSREF_QUERY_PREFIX + searchQuery + CROSSREF_QUERY_SUFFIX
 }
-
-// Use this to get urls for Sci-Hub
-// https://en.wikipedia.org/wiki/Sci-Hub
-// document.querySelectorAll('td.url>a').forEach(function(e) {fetch(e.origin).then((r) => {console.log(r)})})
