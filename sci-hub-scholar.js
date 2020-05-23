@@ -1,5 +1,3 @@
-print = console.log // Because no one ever wants to print
-
 // Whitelisted, Searching, DOI Not Found, Sci-Hub Article Not Found, Success
 const IMG_STATUS = {
 	SEARCHING: {
@@ -26,32 +24,27 @@ const IMG_STATUS = {
 
 const WIKIPEDIA_PAGE = "https://en.wikipedia.org/wiki/Sci-Hub"
 
-let SCIHUB_QUERY = "https://sci-hub.tw/"
+let SCIHUB_QUERY = "https://sci-hub.se/"
 
 fetch(WIKIPEDIA_PAGE)
-.then(response => response.text())
-.then(data => {
-	const parser = new DOMParser()
-	// print(data)
-	const doc = parser.parseFromString(data, "text/html")
-	const results = doc.querySelectorAll('td.url>span.url>a')
-	return results[0].host
-})
-.then(host => {
-	SCIHUB_QUERY = "https://" + host
-	print(host)
-	document.querySelectorAll('h3>a').forEach(element => {
-		print(element)
-		if (element.host.includes("sci-hub") &&
-				element.host != host) {
-			print("mismatch: ", host, element.host)
-			element.host = host
-		}
+	.then(response => response.text())
+	.then(data => {
+		const parser = new DOMParser()
+		const doc = parser.parseFromString(data, "text/html")
+		const results = doc.querySelectorAll('td.url>span.url>a')
+		return results[0].host
 	})
-})
-.catch(error => {
-	console.error("Error: ", error)
-})
+	.then(host => {
+		SCIHUB_QUERY = "https://" + host
+		document.querySelectorAll('h3>a').forEach(element => {
+			if (element.host.includes("sci-hub") && element.host != host) {
+				element.host = host
+			}
+		})
+	})
+	.catch(error => {
+		console.error("Error: ", error)
+	})
 
 document.querySelectorAll('h3>a').forEach(element => {
 	const statusIcon = document.createElement("img")
@@ -59,35 +52,33 @@ document.querySelectorAll('h3>a').forEach(element => {
 	statusIcon.height = 18
 	element.insertAdjacentElement("beforebegin", statusIcon)
 	SetStatusIcon(element, IMG_STATUS.SEARCHING)
-
 	const title = element.innerText.toString().toLowerCase()
 	browser.storage.local.get(title)
-	.then((result) => {
-		if (Object.keys(result).length > 0) {
-			element.href = SCIHUB_QUERY + result[title]
-			SetStatusIcon(element, IMG_STATUS.SUCCESS)
-		}
-		else {
-			fetch(CROSSREF_QUERY(title))
-			.then(response => response.json())
-			.then(data => {
-				if (data.status == 'ok') {
-					checkObject = data.message.items[0]
-					if (checkObject.title.toString().toLowerCase() == title) {
-						element.href = SCIHUB_QUERY + checkObject.DOI
-						SetStatusIcon(element, IMG_STATUS.SUCCESS)
-
-						var setObj = new Object()
-						setObj[title] = checkObject.DOI
-						browser.storage.local.set(setObj)
-					}
-					else {
-						SetStatusIcon(element, IMG_STATUS.NO_DOI)
-					}
-				}
-			})
-		}
-	})
+		.then(result => {
+			if (Object.keys(result).length > 0) {
+				element.href = SCIHUB_QUERY + result[title]
+				SetStatusIcon(element, IMG_STATUS.SUCCESS)
+			}
+			else {
+				fetch(CROSSREF_QUERY(title))
+					.then(response => response.json())
+					.then(data => {
+						if (data.status == 'ok') {
+							checkObject = data.message.items[0]
+							if (checkObject.title.toString().toLowerCase() == title) {
+								element.href = SCIHUB_QUERY + checkObject.DOI
+								SetStatusIcon(element, IMG_STATUS.SUCCESS)
+								var setObj = new Object()
+								setObj[title] = checkObject.DOI
+								browser.storage.local.set(setObj)
+							}
+							else {
+								SetStatusIcon(element, IMG_STATUS.NO_DOI)
+							}
+						}
+					})
+			}
+		})
 	return
 });
 
