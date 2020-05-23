@@ -31,3 +31,4 @@ Features
 - https://en.wikipedia.org/wiki/Sci-Hub
 - https://whereisscihub.now.sh/
 - https://news.ycombinator.com/item?id=22409674
+- https://sci-hub.now.sh/
