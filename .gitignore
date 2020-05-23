@@ -106,3 +106,6 @@ dist
 # Images
 .DS_Store
 *.DS_Store
+
+# Builds
+web-ext-artifacts/*
