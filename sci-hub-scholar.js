@@ -54,50 +54,93 @@ browser.storage.local
 })
 
 document.querySelectorAll('h3>a').forEach(element => {
+	const statusA = document.createElement("a")
 	const statusIcon = document.createElement("img")
+	const statusDOI = document.createElement("input")
 	statusIcon.width = 18
 	statusIcon.height = 18
-	element.insertAdjacentElement("beforebegin", statusIcon)
-	SetStatusIcon(element, IMG_STATUS.SEARCHING)
+	statusA.insertAdjacentElement("afterbegin",statusIcon)
+	element.insertAdjacentElement("beforebegin", statusA)
+	element.insertAdjacentElement("afterend", statusDOI)
+	// element.insertAdjacentElement("afterend", statusDOI)
+	SetStatusIcon(element, IMG_STATUS.SEARCHING,"","")
 	const title = element.innerText.toString().toLowerCase()
 	browser.storage.local.get(title)
 	.then(result => {
 		if (Object.keys(result).length > 0) {
-			element.href = SCIHUB_QUERY + result[title]
-			SetStatusIcon(element, IMG_STATUS.SUCCESS)
+			url = SCIHUB_QUERY + result[title]
+			SetStatusIcon(element, IMG_STATUS.SUCCESS,url,result[title])
 		}
 		else {
-			fetch(CROSSREF_QUERY(title))
-			.then(response => response.json())
-			.then(data => {
-				if (data.status == 'ok') {
-					checkObject = data.message.items[0]
-					if (checkObject.title.toString().toLowerCase() == title) {
-						doi = checkObject.DOI
-						element.href = SCIHUB_QUERY + doi
-						SetStatusIcon(element, IMG_STATUS.SUCCESS)
-						var setObj = new Object()
-						setObj[title] = doi
-						browser.storage.local.set(setObj)
+			if(element.href.toString().includes("https://arxiv.org/abs/")){
+				// regex of arxivID: (\d{4}.\d{4,5}|[a-z\-]+(\.[A-Z]{2})?\/\d{7})(v\d+)?
+				doi = element.href.toString().substr(22)
+				url = element.href.toString()
+				SetStatusIcon(element, IMG_STATUS.SUCCESS,url,doi)
+				var setObj = new Object()
+				setObj[title] = doi
+				browser.storage.local.set(setObj)
+			}
+			else if(element.href.toString().match(/10.\d{4,9}\/[-._;()/:A-Z0-9]+/i)){
+				doi = element.href.toString().match(/10.\d{4,9}\/[-._;()/:A-Z0-9]+/i)
+				url = element.href.toString()
+				SetStatusIcon(element, IMG_STATUS.SUCCESS,url,doi)
+				var setObj = new Object()
+				setObj[title] = doi
+				browser.storage.local.set(setObj)
+			}
+			else{
+				fetch(CROSSREF_QUERY(title))
+				.then(response => response.json())
+				.then(data => {
+					if (data.status == 'ok') {
+						checkObject = data.message.items[0]
+						if (checkObject.title.toString().toLowerCase() == title) {
+							doi = checkObject.DOI
+							url = SCIHUB_QUERY + doi
+							SetStatusIcon(element, IMG_STATUS.SUCCESS,url,doi)
+							var setObj = new Object()
+							setObj[title] = doi
+							browser.storage.local.set(setObj)
+						}
+						else {
+							SetStatusIcon(element, IMG_STATUS.NO_DOI,"","")
+						}
 					}
-					else {
-						SetStatusIcon(element, IMG_STATUS.NO_DOI)
-					}
-				}
-			})
+				})
+			}
 		}
 	})
 	return
 });
 
-function SetStatusIcon(element, status) {
-	element.previousElementSibling.src = status.src
+function SetStatusIcon(element, status,url,doi) {
+	element.previousElementSibling.href= url
+	element.previousElementSibling.firstElementChild.src = status.src
 	element.previousElementSibling.title = status.title
+	// if(doi!=""){window.clipboardData.setData('text',doi);}
+	if(status==IMG_STATUS.SUCCESS){
+		element.nextElementSibling.Type="text"
+		element.nextElementSibling.value=doi
+	}
 }
+
+// function copyToClipboard(text) {
+    // var dummy = document.createElement("textarea");
+    // // to avoid breaking orgain page when copying more words
+    // // cant copy when adding below this code
+    // // dummy.style.display = 'none'
+    // document.body.appendChild(dummy);
+    // //Be careful if you use texarea. setAttribute('value', value), which works with "input" does not work with "textarea". – Eduard
+    // dummy.value = text;
+    // dummy.select();
+    // document.execCommand("copy");
+    // document.body.removeChild(dummy);
+// }
 
 function CROSSREF_QUERY(searchQuery) {
 	const CROSSREF_QUERY_PREFIX = 'https://api.crossref.org/works?query='
-	const CROSSREF_QUERY_SUFFIX = "&rows=1&select=DOI,title&mailto=djfdat+scihubscholar@gmail.org"
+	const CROSSREF_QUERY_SUFFIX = "&rows=1&select=DOI,title&mailto=shdagdsfjdsanhjfdksagj@gmail.com"
 
 	return "" + CROSSREF_QUERY_PREFIX + searchQuery + CROSSREF_QUERY_SUFFIX
 }

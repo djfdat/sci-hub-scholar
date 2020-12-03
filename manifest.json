@@ -30,9 +30,7 @@
 
 	"content_scripts": [
 		{
-			"matches": [
-				"*://*.scholar.google.com/scholar?*"
-			],
+			"matches": ["*://*.scholar.google.com/scholar?*", "*://*.scholar.google.com.hk/scholar?*"],
 			"js": ["sci-hub-scholar.js"]
 		}
 	]
