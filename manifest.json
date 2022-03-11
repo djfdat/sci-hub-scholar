@@ -4,7 +4,7 @@
 	"short_name": "SciHubScholar",
 	"description": "Modifies search result links from Google Scholar to Sci-Hub pages",
 	"homepage_url": "https://github.com/djfdat/sci-hub-scholar",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"incognito": "spanning",
 	"icons": {
 		"48": "icons/book.svg",
@@ -24,6 +24,7 @@
 	],
 	"content_scripts": [
 		{
+			"run_at": "document_end",
 			"matches": [
 				"*://*.google.com/scholar?*",
 				"*://*.google.ad/scholar?*",
