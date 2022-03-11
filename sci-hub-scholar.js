@@ -1,182 +1,205 @@
 const IMG_STATUS = {
-	SEARCHING: {
-		src: browser.runtime.getURL("icons/refresh.svg"),
-		title: "Processing article."
-	},
-	WHITELISTED: {
-		src: browser.runtime.getURL("icons/award.svg"),
-		title: "This website for this article was found in the whitelist."
-	},
-	NO_DOI: {
-		src: browser.runtime.getURL("icons/ban.svg"),
-		title: "This article did not return a valid DOI."
-	},
-	NO_ARTICLE: {
-		src: browser.runtime.getURL("icons/ban.svg"),
-		title: "This article was not found on Sci-Hub."
-	},
-	SUCCESS: {
-		src: browser.runtime.getURL("icons/book.svg"),
-		title: "This article was found on Sci-Hub, and the link has been updated."
-	},
-}
+  SEARCHING: {
+    src: browser.runtime.getURL("icons/refresh.svg"),
+    title: "Processing article.",
+  },
+  NO_DOI: {
+    src: browser.runtime.getURL("icons/ban.svg"),
+    title: "This article did not return a valid DOI.",
+  },
+  SUCCESS: {
+    success: true,
+    src: browser.runtime.getURL("icons/book.svg"),
+    title:
+      "This article's DOI was found, and the link has been updated to direct to Sci-Hub. This icon has been updated to link to the original article address.",
+  },
+  SUCCESS_REGEX: {
+    success: true,
+    src: browser.runtime.getURL("icons/book.svg"),
+    title:
+      "This article's DOI was found in the URL, and the link has been updated to direct to Sci-Hub. This icon has been updated to link to the original article address.",
+  },
+  SUCCESS_CACHE: {
+    success: true,
+    src: browser.runtime.getURL("icons/book.svg"),
+    title:
+      "This article's DOI was found in cache, and the link has been updated to direct to Sci-Hub. This icon has been updated to link to the original article address.",
+  },
+};
 
-const WIKIPEDIA_PAGE = "https://en.wikipedia.org/wiki/Sci-Hub"
+const regex = '(10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?![%"#? ])\\S)+)';
 
-let SCIHUB_QUERY = "https://sci-hub.se/"
+const WIKIPEDIA_PAGE = "https://en.wikipedia.org/wiki/Sci-Hub";
+const MIN_SCORE = 40;
 
-browser.storage.local
-	.get("last_sci_hub_url_update")
-	.then(result => {
-		if (Date.now() > result.last_sci_hub_url_update + 600000) {
-			// 10 minutes cache
-			fetch(WIKIPEDIA_PAGE)
-				.then(response => response.text())
-				.then(data => {
-					const parser = new DOMParser()
-					const doc = parser.parseFromString(data, "text/html")
-					const results = doc.querySelectorAll('td.url>div>ul>li>span.url>a')
-					browser.storage.local.set({ last_sci_hub_url_update: Date.now() })
-					return results[0].host
-				})
-				.then(host => {
-					console.log(host);
-					return host;
-				})
-				.then(host => {
-					SCIHUB_QUERY = "https://" + host
-					document.querySelectorAll('h3>a').forEach(element => {
-						if (element.host.includes("sci-hub") && element.host != host) {
-							element.host = host
-						}
-					})
-				})
-				.catch(error => {
-					console.error("Error: ", error)
-				})
-		}
-	})
+let SCIHUB_QUERY = "https://sci-hub.se/";
 
-document.querySelectorAll('h3>a').forEach(element => {
-	const statusA = document.createElement("a")
-	const statusIcon = document.createElement("img")
-	const statusDOI = document.createElement("input")
-	statusDOI.hidden = true
-	statusIcon.width = 18
-	statusIcon.height = 18
-	statusA.insertAdjacentElement("afterbegin", statusIcon)
-	element.insertAdjacentElement("beforebegin", statusA)
-	element.insertAdjacentElement("afterend", statusDOI)
-	UpdateStatus(IMG_STATUS.SEARCHING, element.previousElementSibling, element, element.nextElementSibling, null, null)
-	const title = element.innerText.toString().toLowerCase()
-	browser.storage.local.get(title)
-		.then(result => {
-			// Found cached title/url, no need to look up DOI
-			if (Object.keys(result).length > 0) {
-				url = SCIHUB_QUERY + result[title]
-				UpdateStatus(IMG_STATUS.SUCCESS, element.previousElementSibling, element, element.nextElementSibling, url, result[title])
-			}
-			// Else, lookup URLs w/ different methods
-			else {
-				// ARXIV lookup
-				if (element.href.toString().includes("https://arxiv.org/abs/")) {
-					// regex of arxivID: (\d{4}.\d{4,5}|[a-z\-]+(\.[A-Z]{2})?\/\d{7})(v\d+)?
-					doi = element.href.toString().substr(22)
-					url = element.href.toString()
-					UpdateStatus(IMG_STATUS.SUCCESS, element.previousElementSibling, element, element.nextElementSibling, url, doi)
-					var setObj = new Object()
-					setObj[title] = doi
-					browser.storage.local.set(setObj)
-				}
-				// DOI lookup
-				else if (element.href.toString().match(/10.\d{4,9}\/[-._;()/:A-Z0-9]+/i)) {
-					doi = element.href.toString().match(/10.\d{4,9}\/[-._;()/:A-Z0-9]+/i)
-					url = element.href.toString()
-					UpdateStatus(IMG_STATUS.SUCCESS, element.previousElementSibling, element, element.nextElementSibling, url, doi)
-					var setObj = new Object()
-					setObj[title] = doi
-					browser.storage.local.set(setObj)
-				}
-				else {
-					// Crossref Lookup
-					fetch(CROSSREF_QUERY(title))
-						.then(response => response.json())
-						.then(data => {
-							if (data.status == 'ok') {
-								checkObject = data.message.items[0]
-								if (checkObject.title.toString().toLowerCase() == title) {
-									doi = checkObject.DOI
-									url = SCIHUB_QUERY + doi
-									UpdateStatus(IMG_STATUS.SUCCESS, element.previousElementSibling, element, element.nextElementSibling, url, doi)
-									var setObj = new Object()
-									setObj[title] = doi
-									browser.storage.local.set(setObj)
-								}
-								else {
-									UpdateStatus(IMG_STATUS.NO_DOI, element.previousElementSibling, element, element.nextElementSibling, false, false)
-								}
-							}
-						})
-				}
-			}
-		})
-	return
+// Grab updated Sci-Hub URL from Wikipedia
+browser.storage.local.get("last_sci_hub_url_update").then((result) => {
+  if (Date.now() > result.last_sci_hub_url_update + 600000) {
+    // 10 minutes cache
+    fetch(WIKIPEDIA_PAGE)
+      .then((response) => response.text())
+      .then((data) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data, "text/html");
+        const results = doc.querySelectorAll("td.url>div>ul>li>span.url>a");
+        browser.storage.local.set({ last_sci_hub_url_update: Date.now() });
+        return results[0].host;
+      })
+      .then((host) => {
+        // console.log(host);
+        return host;
+      })
+      .then((host) => {
+        SCIHUB_QUERY = "https://" + host;
+        document.querySelectorAll("h3>a").forEach((element) => {
+          if (element.host.includes("sci-hub") && element.host != host) {
+            element.host = host;
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Error: ", error);
+      });
+  }
 });
 
-function UpdateStatus(status, elIcon, elTitle, elDOI, url, doi) {
-	elIcon.firstElementChild.src = status.src
-	elIcon.title = status.title
-	elIcon.href = null
+document.querySelectorAll("div.gs_ri").forEach((element) => {
+  const elIconLink = document.createElement("a");
+  const elIcon = document.createElement("img");
+  const elDOI = document.createElement("input");
 
-	switch (status) {
-		case IMG_STATUS.SEARCHING:
+  // Configure DOI Text Element
+  elDOI.hidden = true;
+  elDOI.readOnly = true;
 
-			break;
-		case IMG_STATUS.WHITELISTED:
+  // Configure Icon Element
+  elIcon.width = 18;
+  elIcon.height = 18;
+  elIcon.style.verticalAlign = "middle";
 
-			break;
-		case IMG_STATUS.NO_DOI:
+  // Pull out important information
+  const elTitle = element.querySelector("h3>a");
+  const elAuthors = element.querySelector("div.gs_a");
+  const Title = elTitle.innerText.toString();
+  const LeadAuthor = elAuthors.innerText.toString().split(", ")[0];
+  const oldURL = elTitle.href;
 
-			break;
-		case IMG_STATUS.NO_ARTICLE:
+  elIcon.src = IMG_STATUS.SEARCHING.src;
 
-			break;
-		case IMG_STATUS.SUCCESS:
-			// Set Icon URL to original URL
-			elIcon.href = elTitle.href
+  elIconLink.insertAdjacentElement("afterbegin", elIcon);
+  elTitle.insertAdjacentElement("beforebegin", elIconLink);
+  elTitle.insertAdjacentElement("afterend", elDOI);
 
-			// Set title url to new URL
-			elTitle.href = url
+  // Setup CrossRef Query
+  const CrossRefQueryURL = `https://api.crossref.org/works?query.title=${encodeURIComponent(
+    Title
+  )}&query.author=${encodeURIComponent(
+    LeadAuthor
+  )}&rows=1&sort=score&select=DOI,title,score&mailto=nfajsdnfjandsjanjdfajsjfdansjnc@gmail.com`; // Select URL & link for doi & DOI redirect
 
-			// Set DOI Object
-			elDOI.value = doi
-			elDOI.readOnly = true
-			elDOI.hidden = false
+  browser.storage.local.get(Title).then((result) => {
+    // Found cached title/url, no need to look up DOI
+    // console.log(result);
+    if (Object.keys(result).length > 0) {
+      const doi = result[Title];
+      const newURL = SCIHUB_QUERY + doi;
+      UpdateStatus(
+        IMG_STATUS.SUCCESS_CACHE,
+        elIconLink,
+        elIcon,
+        elTitle,
+        elDOI,
+        doi,
+        newURL,
+        oldURL
+      );
+    } else if (oldURL.toString().match(regex)) {
+      const doi = oldURL.toString().match(regex)[0];
+      // console.log(doi);
+      const newURL = SCIHUB_QUERY + doi;
+      // console.log(
+      //   `Attempt to pull doi straight out of url ${oldURL.toString()} for article ${Title} : ${doi}`
+      // );
+      UpdateStatus(
+        IMG_STATUS.SUCCESS_REGEX,
+        elIconLink,
+        elIcon,
+        elTitle,
+        elDOI,
+        doi,
+        newURL,
+        oldURL
+      );
+      var cacheObj = new Object();
+      cacheObj[Title] = doi;
+      browser.storage.local.set(cacheObj);
+    } else {
+      fetch(CrossRefQueryURL)
+        .then((response) => {
+          if (response.ok) {
+            // console.log(response);
+            return response.json();
+          } else {
+            UpdateStatus(IMG_STATUS.NO_DOI, elIconLink, elIcon, elTitle, elDOI);
+            return Error(`No Response from CrossRef for ${obj}`);
+          }
+        })
+        .then((data) => {
+          // console.log(data);
+          const checkObject = data.message.items[0];
+          const score = checkObject.score;
+          if (score > MIN_SCORE) {
+            const doi = checkObject.DOI.toString();
+            const newURL = SCIHUB_QUERY + doi;
 
-			break;
+            UpdateStatus(
+              IMG_STATUS.SUCCESS,
+              elIconLink,
+              elIcon,
+              elTitle,
+              elDOI,
+              doi,
+              newURL,
+              oldURL
+            );
 
-		default:
-			break;
-	}
-}
+            // Cache off DOI
+            cacheObj = new Object();
+            cacheObj[Title] = doi;
+            browser.storage.local
+              .set(cacheObj)
+              // .then(console.log(`Successfully cached ${Title} : ${doi}`))
+              .catch((error) =>
+                console.error(`Failed to cache ${Title} : ${doi} : ${error}`)
+              );
+          } else {
+            UpdateStatus(IMG_STATUS.NO_DOI, elIconLink, elIcon, elTitle, elDOI);
+          }
+        });
+    }
+  });
+});
 
-function SetStatusIcon(element, status, url, doi) {
-	element.href = url
-	// Set Icon
-	element.previousElementSibling.href = element.href
-	element.previousElementSibling.firstElementChild.src = status.src
-	element.previousElementSibling.title = status.title
-	if (status == IMG_STATUS.SUCCESS) {
-		// Set doi field
-		element.nextElementSibling.value = doi
-		element.nextElementSibling.readOnly = true
-		element.nextElementSibling.hidden = false
-	}
-}
+function UpdateStatus(
+  status,
+  elIconLink,
+  elIcon,
+  elTitle,
+  elDOI,
+  doi,
+  newURL,
+  oldURL
+) {
+  elIcon.src = status.src;
+  elIcon.title = status.title;
 
-function CROSSREF_QUERY(searchQuery) {
-	const CROSSREF_QUERY_PREFIX = 'https://api.crossref.org/works?query='
-	const CROSSREF_QUERY_SUFFIX = "&rows=1&select=DOI,title&mailto=shdagdsfjdsanhjfdksagj@gmail.com"
-
-	return "" + CROSSREF_QUERY_PREFIX + searchQuery + CROSSREF_QUERY_SUFFIX
+  if (status.success) {
+    elDOI.hidden = false;
+    elDOI.value = doi;
+    elDOI.size = doi.length;
+    elTitle.href = newURL;
+    elIconLink.href = oldURL;
+  }
 }

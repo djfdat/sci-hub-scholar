@@ -13,15 +13,14 @@
 	"web_accessible_resources": [
 		"icons/refresh.svg",
 		"icons/award.svg",
-		"icons/ban.svg",
-		"icons/ban.svg",
 		"icons/book.svg"
 	],
 	"permissions": [
 		"https://api.crossref.org/works?query=*",
 		"https://en.wikipedia.org/wiki/Sci-Hub",
 		"webRequest",
-		"storage"
+		"storage",
+		"unlimitedStorage"
 	],
 	"content_scripts": [
 		{
