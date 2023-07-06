@@ -32,6 +32,10 @@ const regex = '(10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?![%"#? ])\\S)+)';
 const WIKIPEDIA_PAGE = "https://en.wikipedia.org/wiki/Sci-Hub";
 const MIN_SCORE = 40;
 
+const SKIP_DOI_CACHE_LOOKUP = false;
+const SKIP_DOI_URL_LOOKUP = false;
+const SKIP_DOI_CROSSREF_LOOKUP = false;
+
 let SCIHUB_QUERY = "https://sci-hub.se/";
 
 // Grab updated Sci-Hub URL from Wikipedia
@@ -102,7 +106,7 @@ document.querySelectorAll("div.gs_ri").forEach((element) => {
   browser.storage.local.get(Title).then((result) => {
     // Found cached title/url, no need to look up DOI
     // console.log(result);
-    if (Object.keys(result).length > 0) {
+    if (!SKIP_DOI_CACHE_LOOKUP && Object.keys(result).length > 0) {
       const doi = result[Title];
       const newURL = SCIHUB_QUERY + doi;
       UpdateStatus(
@@ -115,13 +119,17 @@ document.querySelectorAll("div.gs_ri").forEach((element) => {
         newURL,
         oldURL
       );
-    } else if (oldURL.toString().match(regex)) {
+    } else if (!SKIP_DOI_URL_LOOKUP && oldURL.toString().match(regex)) {
       const doi = oldURL.toString().match(regex)[0];
-      // console.log(doi);
-      const newURL = SCIHUB_QUERY + doi;
-      // console.log(
-      //   `Attempt to pull doi straight out of url ${oldURL.toString()} for article ${Title} : ${doi}`
-      // );
+      console.log(doi);
+      let newURL = SCIHUB_QUERY + doi;
+
+      if (newURL.endsWith("\/html")) {
+        newURL = newURL.substring(0, newURL.length - 5);
+      }
+      console.log(
+        `Attempt to pull doi straight out of url ${oldURL.toString()} for article ${Title} : ${doi}, \n ${newURL}`
+      );
       UpdateStatus(
         IMG_STATUS.SUCCESS_REGEX,
         elIconLink,
@@ -135,7 +143,7 @@ document.querySelectorAll("div.gs_ri").forEach((element) => {
       var cacheObj = new Object();
       cacheObj[Title] = doi;
       browser.storage.local.set(cacheObj);
-    } else {
+    } else if (!SKIP_DOI_CROSSREF_LOOKUP) {
       fetch(CrossRefQueryURL)
         .then((response) => {
           if (response.ok) {
