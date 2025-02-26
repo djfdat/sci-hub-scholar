@@ -38,6 +38,68 @@ const SKIP_DOI_CROSSREF_LOOKUP = false;
 
 let SCIHUB_QUERY = "https://sci-hub.se/";
 
+
+class RequestQueue {
+  constructor(concurrency = 3, rateLimit = 1000) {
+    this.concurrency = concurrency;
+    this.rateLimit = rateLimit;
+    this.running = 0;
+    this.queue = [];
+    this.lastRun = 0;
+    this.requestCount = 0;
+  }
+
+  enqueue(fn) {
+    this.requestCount++;
+    const requestId = this.requestCount;
+    console.log(`[Queue] Request #${requestId} added to queue. Queue length: ${this.queue.length + 1}`);
+
+    return new Promise((resolve, reject) => {
+      this.queue.push({
+        fn,
+        resolve,
+        reject,
+        requestId
+      });
+      this.dequeue();
+    });
+  }
+
+  async dequeue() {
+    if (this.running >= this.concurrency || this.queue.length === 0) {
+      console.log(`[Queue] Cannot dequeue. Running: ${this.running}, Queue length: ${this.queue.length}`);
+      return;
+    }
+
+    this.running++;
+    const { fn, resolve, reject, requestId } = this.queue.shift();
+    const now = Date.now();
+    const timeToWait = Math.max(0, this.lastRun + this.rateLimit - now);
+
+    console.log(`[Queue] Starting request #${requestId}. Waiting ${timeToWait}ms. Active requests: ${this.running}`);
+
+    await new Promise(resolve => setTimeout(resolve, timeToWait));
+    this.lastRun = Date.now();
+
+    try {
+      const result = await fn();
+      console.log(`[Queue] Request #${requestId} completed successfully`);
+      resolve(result);
+    } catch (error) {
+      console.error(`[Queue] Request #${requestId} failed:`, error);
+      reject(error);
+    } finally {
+      this.running--;
+      console.log(`[Queue] Request #${requestId} finished. Remaining in queue: ${this.queue.length}`);
+      this.dequeue();
+    }
+  }
+}
+
+// Increase the rate limit to 3000ms (3 seconds) to be safer with CrossRef API
+const requestQueue = new RequestQueue(1, 3000);
+
+
 // Grab updated Sci-Hub URL from Wikipedia
 browser.storage.local.get("last_sci_hub_url_update").then((result) => {
   if (Date.now() > result.last_sci_hub_url_update + 600000) {
@@ -97,11 +159,11 @@ document.querySelectorAll("div.gs_ri").forEach((element) => {
   elTitle.insertAdjacentElement("afterend", elDOI);
 
   // Setup CrossRef Query
-  const CrossRefQueryURL = `https://api.crossref.org/works?query.title=${encodeURIComponent(
+  const CrossRefQueryURL = `https://api.crossref.org/v1/works?query.title=${encodeURIComponent(
     Title
   )}&query.author=${encodeURIComponent(
     LeadAuthor
-  )}&rows=1&sort=score&select=DOI,title,score&mailto=nfajsdnfjandsjanjdfajsjfdansjnc@gmail.com`; // Select URL & link for doi & DOI redirect
+  )}&rows=1&sort=score&select=DOI,title,score`; // Select URL & link for doi & DOI redirect
 
   browser.storage.local.get(Title).then((result) => {
     // Found cached title/url, no need to look up DOI
@@ -144,10 +206,10 @@ document.querySelectorAll("div.gs_ri").forEach((element) => {
       cacheObj[Title] = doi;
       browser.storage.local.set(cacheObj);
     } else if (!SKIP_DOI_CROSSREF_LOOKUP) {
-      fetch(CrossRefQueryURL)
+      // Replace the fetch call with this version
+      requestQueue.enqueue(() => fetch(CrossRefQueryURL))
         .then((response) => {
           if (response.ok) {
-            // console.log(response);
             return response.json();
           } else {
             UpdateStatus(IMG_STATUS.NO_DOI, elIconLink, elIcon, elTitle, elDOI);
@@ -189,7 +251,6 @@ document.querySelectorAll("div.gs_ri").forEach((element) => {
     }
   });
 });
-
 function UpdateStatus(
   status,
   elIconLink,
