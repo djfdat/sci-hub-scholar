@@ -1,36 +1,52 @@
 <!DOCTYPE html>
-
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
-  </head>
+    <title>Sci-Hub Scholar Options</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Sci-Hub Scholar Options</h1>
 
-  <body>
-    <h2>Cache Management</h2>
-		<p>
-      <label>Currently Cached DOIs: <span id="CachedDOIsCount">0</span></label>
-    </p>
-		<p>
-      <button id="RefreshCacheSize">Refresh Cache Size</button>
-      <button id="ClearCachedDOIs">Clear Cached DOIs</button>
-    </p>
+        <section id="cache-management">
+            <h2>Cache Management</h2>
+            <div class="inline-group">
+                <p>
+                    <label for="CachedDOIsCount">Cached DOIs Count:</label>
+                    <span id="CachedDOIsCount">0</span>
+                </p>
+            </div>
+            <p>
+                <button id="RefreshCacheSize">Refresh Count</button>
+                <button id="ClearCachedDOIs">Clear Cached DOIs</button>
+            </p>
+            <p class="info-text" style="font-size: small; color: grey; margin-top:10px;">
+                Clearing cached DOIs will remove locally stored article-to-DOI mappings.
+                The extension will re-fetch this information as needed.
+                Configuration settings (like custom URL) will not be cleared.
+            </p>
+        </section>
 
-    <hr />
+        <hr style="margin: 30px 0; border-width: 0; border-style: solid; border-top-width: 1px;" />
 
-    <h2>Custom Sci-Hub Domain</h2>
-    <p>
-      <label for="customSciHubUrl">Custom Sci-Hub URL:</label>
-      <input type="text" id="customSciHubUrl" name="customSciHubUrl" size="40" placeholder="https://sci-hub.example.com" />
-    </p>
-    <p>
-      <button id="saveCustomUrl">Save Custom URL</button>
-      <span id="saveStatus" style="margin-left: 10px;"></span>
-    </p>
-    <p style="font-size: small; color: grey;">
-      Enter a full custom Sci-Hub domain (e.g., https://sci-hub.se).
-      This will override the automatically fetched URL. Leave blank to revert to automatic/default.
-    </p>
-
+        <section id="custom-url-settings">
+            <h2>Custom Sci-Hub Domain</h2>
+            <p class="info-text">
+                Specify a custom Sci-Hub domain (e.g., https://sci-hub.st).
+                This URL will be used to access articles.
+                If left blank, the extension will attempt to use an automatically discovered or a default URL.
+            </p>
+            <p>
+                <label for="customSciHubUrl">Custom Sci-Hub URL:</label>
+                <input type="text" id="customSciHubUrl" name="customSciHubUrl" size="40" placeholder="e.g., https://sci-hub.se" />
+            </p>
+            <p>
+                <button id="saveCustomUrl">Save Custom URL</button>
+                <span id="saveStatus" class="status-message"></span>
+            </p>
+        </section>
+    </div>
     <script src="options.js"></script>
-  </body>
+</body>
 </html>

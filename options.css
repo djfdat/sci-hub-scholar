@@ -1,0 +1,274 @@
+:root {
+	/* Dark theme values are now default */
+	--page-background: #1e1e1e;
+	--container-background: #2d2d2d;
+	--section-background: #3a3a3a;
+	--text-color: #e0e0e0;
+	--heading-color: #ffffff;
+	--sub-heading-color: #f0f0f0;
+	--border-color: #444444;
+	--hr-border-color: #383838;
+	--input-border-color: #555555;
+	--input-background-color: #333333;
+	--input-text-color: #e0e0e0;
+	--input-focus-border-color: #007bff;
+	/* Keeping blue for focus, can be adjusted */
+	--input-focus-shadow-color: rgba(0, 123, 255, .35);
+	/* Slightly more visible shadow */
+
+	/* Button colors can be kept as is or adjusted for dark theme aesthetics */
+	--button-background: #007bff;
+	--button-text-color: #ffffff;
+	--button-hover-background: #0056b3;
+	--button-active-background: #004085;
+
+	--danger-button-background: #dc3545;
+	--danger-button-hover-background: #c82333;
+	--danger-button-active-background: #bd2130;
+
+	--shadow-color: rgba(255, 255, 255, 0.08);
+	/* Lighter shadow for dark bg */
+	--shadow-light-color: rgba(255, 255, 255, 0.04);
+	--info-text-color: #bbbbbb;
+}
+
+/* General Body and Page Styles */
+body {
+	font-family: Arial, sans-serif;
+	background-color: var(--page-background);
+	color: var(--text-color);
+	margin: 0;
+	padding: 20px;
+	display: flex;
+	justify-content: center;
+	min-height: 100vh;
+	box-sizing: border-box;
+}
+
+.container {
+	background-color: var(--container-background);
+	padding: 25px 30px;
+	border-radius: 8px;
+	box-shadow: 0 4px 8px var(--shadow-color);
+	width: 100%;
+	max-width: 600px;
+	box-sizing: border-box;
+}
+
+h1 {
+	color: var(--heading-color);
+	text-align: center;
+	margin-bottom: 20px;
+	font-size: 1.8em;
+}
+
+h2 {
+	color: var(--sub-heading-color);
+	border-bottom: 1px solid var(--hr-border-color);
+	padding-bottom: 10px;
+	margin-top: 30px;
+	margin-bottom: 20px;
+	font-size: 1.4em;
+}
+
+/* Section specific styling */
+section {
+	margin-bottom: 30px;
+	padding: 15px;
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	background-color: var(--section-background);
+}
+
+section:last-of-type {
+	margin-bottom: 0;
+}
+
+/* Paragraphs and Labels */
+p {
+	line-height: 1.6;
+	margin-bottom: 10px;
+}
+
+p.info-text {
+	/* Style for descriptive paragraphs */
+	font-size: small;
+	color: var(--info-text-color);
+	margin-top: 10px;
+}
+
+
+label {
+	font-weight: bold;
+	margin-right: 8px;
+	display: block;
+	/* Make labels block for better spacing with inputs */
+	margin-bottom: 5px;
+	color: var(--text-color);
+	/* Ensure labels also use text color variable */
+}
+
+/* Input fields */
+input[type="text"] {
+	width: calc(100% - 22px);
+	/* Adjust width to account for padding and border */
+	padding: 10px;
+	border: 1px solid var(--input-border-color);
+	background-color: var(--input-background-color);
+	color: var(--input-text-color);
+	border-radius: 4px;
+	font-size: 1em;
+	margin-bottom: 10px;
+	/* Space below input */
+	box-sizing: border-box;
+}
+
+input[type="text"]:focus {
+	border-color: var(--input-focus-border-color);
+	box-shadow: 0 0 0 0.2rem var(--input-focus-shadow-color);
+	outline: none;
+}
+
+/* Buttons */
+button {
+	background-color: var(--button-background);
+	color: var(--button-text-color);
+	border: none;
+	padding: 10px 15px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 1em;
+	margin-right: 10px;
+	box-shadow: 0 2px 4px var(--shadow-light-color);
+	transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+button:hover {
+	background-color: var(--button-hover-background);
+	box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+button:active {
+	background-color: var(--button-active-background);
+}
+
+/* Specific button styling if needed */
+#ClearCachedDOIs {
+	background-color: var(--danger-button-background);
+}
+
+#ClearCachedDOIs:hover {
+	background-color: var(--danger-button-hover-background);
+}
+
+#ClearCachedDOIs:active {
+	background-color: var(--danger-button-active-background);
+}
+
+
+/* Status Messages */
+.status-message {
+	/* General class for status messages */
+	display: inline-block;
+	margin-left: 10px;
+	font-size: 0.9em;
+	padding: 5px 0;
+}
+
+/* Specific styling for #saveStatus if it remains a span, or if it's a p with class .status-message */
+#saveStatus {
+	/* font-weight: bold; */
+	/* Handled by color for success/error */
+}
+
+/* Horizontal Rule styling */
+hr {
+	border: none;
+	/* Clear default browser border */
+	border-top: 1px solid var(--hr-border-color);
+	/* Use variable for color */
+	margin: 30px 0;
+	/* Keep margin from inline style in HTML, or consolidate here */
+}
+
+/* Helper for inline elements if needed */
+.inline-group p {
+	display: flex;
+	/* Aligns label, span, and buttons on one line */
+	align-items: center;
+	/* Vertically aligns items in the flex container */
+	margin-bottom: 15px;
+}
+
+.inline-group label {
+	margin-bottom: 0;
+	/* Override block label margin */
+	white-space: nowrap;
+	/* Prevent label from wrapping */
+}
+
+.inline-group span,
+.inline-group button {
+	margin-left: 8px;
+}
+
+.inline-group input[type="text"] {
+	flex-grow: 1;
+	/* Allows input to take available space */
+	margin-bottom: 0;
+	/* Override default input margin */
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+	body {
+		padding: 10px;
+	}
+
+	.container {
+		padding: 15px;
+		margin: 10px;
+	}
+
+	h1 {
+		font-size: 1.6em;
+	}
+
+	h2 {
+		font-size: 1.3em;
+	}
+
+	input[type="text"],
+	button {
+		font-size: 0.95em;
+		/* Slightly smaller on small screens */
+	}
+
+	.inline-group p {
+		flex-direction: column;
+		/* Stack elements vertically on small screens */
+		align-items: flex-start;
+	}
+
+	.inline-group input[type="text"] {
+		width: 100%;
+		/* Full width for stacked input */
+		margin-top: 5px;
+	}
+
+	.inline-group button {
+		margin-top: 10px;
+		/* Space above buttons when stacked */
+		margin-left: 0;
+		/* Reset margin for stacked buttons */
+	}
+}
+
+/*
+ The @media (prefers-color-scheme: dark) block has been removed.
+ The :root variables are now set to dark theme values by default.
+ If a light theme override is desired via system preference,
+ a @media (prefers-color-scheme: light) block would be needed here
+ to redefine the variables to their light theme counterparts.
+ For this task, "dark by default" is interpreted as always dark.
+*/

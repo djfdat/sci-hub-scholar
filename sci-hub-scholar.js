@@ -1,27 +1,35 @@
+// SVG Icon Definitions
+const REFRESH_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-refresh" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -5v5h5" /><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 5v-5h-5" /></svg>`;
+const BOOK_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-book" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" /><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" /><line x1="3" y1="6" x2="3" y2="19" /><line x1="12" y1="6" x2="12" y2="19" /><line x1="21" y1="6" x2="21" y2="19" /></svg>`;
+const BAN_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-ban" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9" /><line x1="5.7" y1="5.7" x2="18.3" y2="18.3" /></svg>`;
+const COPY_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" id="mdi-content-copy" viewBox="0 0 24 24" width="14px" height="14px" fill="currentColor"><path d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" /></svg>`;
+// Note: A checkmark icon would be good for copy success feedback. Using BOOK_ICON_SVG as placeholder.
+const CHECK_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="14px" height="14px" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg>`; // Using a generic check for feedback
+
 const IMG_STATUS = {
   SEARCHING: {
-    src: browser.runtime.getURL("icons/refresh.svg"),
+    svg: REFRESH_ICON_SVG,
     title: "Processing article.",
   },
   NO_DOI: {
-    src: browser.runtime.getURL("icons/ban.svg"),
+    svg: BAN_ICON_SVG,
     title: "This article did not return a valid DOI.",
   },
   SUCCESS: {
     success: true,
-    src: browser.runtime.getURL("icons/book.svg"),
+    svg: BOOK_ICON_SVG,
     title:
       "This article's DOI was found, and the link has been updated to direct to Sci-Hub. This icon has been updated to link to the original article address.",
   },
   SUCCESS_REGEX: {
     success: true,
-    src: browser.runtime.getURL("icons/book.svg"),
+    svg: BOOK_ICON_SVG,
     title:
       "This article's DOI was found in the URL, and the link has been updated to direct to Sci-Hub. This icon has been updated to link to the original article address.",
   },
   SUCCESS_CACHE: {
     success: true,
-    src: browser.runtime.getURL("icons/book.svg"),
+    svg: BOOK_ICON_SVG,
     title:
       "This article's DOI was found in cache, and the link has been updated to direct to Sci-Hub. This icon has been updated to link to the original article address.",
   },
@@ -332,17 +340,36 @@ async function getDoiFromCrossRef(title, leadAuthor) {
 async function processScholarResult(element) {
   // Create UI elements for displaying status and DOI
   const elIconLink = document.createElement("a");
-  const elIcon = document.createElement("img");
+  const elIcon = document.createElement("span"); // Changed from <img> to <span>
   const elDOI = document.createElement("input");
 
   // Configure DOI Text Element
   elDOI.hidden = true;
   elDOI.readOnly = true;
+  elDOI.style.border = '1px solid #ccc'; // Standard border
+  elDOI.style.borderRight = 'none';      // Remove right border to connect with copy button
+  elDOI.style.borderTopLeftRadius = '4px';
+  elDOI.style.borderBottomLeftRadius = '4px';
+  elDOI.style.borderTopRightRadius = '0';
+  elDOI.style.borderBottomRightRadius = '0';
+  elDOI.style.padding = '1px 3px'; // Adjusted for 18px height
+  elDOI.style.fontSize = '12px';   // Reduced font size
+  elDOI.style.backgroundColor = '#f9f9f9';
+  elDOI.style.fontFamily = 'Arial, sans-serif';
+  elDOI.style.boxSizing = 'border-box';
+  elDOI.style.height = '18px'; // Target height
+  // elDOI.style.marginRight = '0';
 
-  // Configure Icon Element
-  elIcon.width = 18;
-  elIcon.height = 18;
-  elIcon.style.verticalAlign = "middle";
+
+  // Configure Icon Element (now a span)
+  elIcon.style.display = 'inline-flex'; // To allow align-items and other flex properties if needed
+  elIcon.style.alignItems = 'center';   // Vertically center SVG if its height is less than span's line-height
+  elIcon.style.height = '1em';          // SVG will scale to this height
+  elIcon.style.width = '1em';           // SVG will scale to this width
+  elIcon.style.verticalAlign = 'middle';// Align span with surrounding text
+  elIcon.style.marginRight = '4px';
+  // elIcon.style.color = '#555'; // Example: set a default color for icons, can be overridden
+
 
   // Pull out important information
   const elTitle = element.querySelector("h3>a");
@@ -351,13 +378,29 @@ async function processScholarResult(element) {
   const leadAuthor = elAuthors.innerText.toString().split(", ")[0];
   const oldURL = elTitle.href;
 
-  elIcon.src = IMG_STATUS.SEARCHING.src;
-  elIcon.title = IMG_STATUS.SEARCHING.title; // Set initial title on the icon itself
+  elIcon.innerHTML = IMG_STATUS.SEARCHING.svg; // Use innerHTML for SVG
+  elIcon.title = IMG_STATUS.SEARCHING.title;   // Set initial title on the icon itself
 
+  // Create a container for DOI input and copy button
+  const doiContainer = document.createElement('div');
+  doiContainer.className = 'doi-container';
+  doiContainer.style.display = 'flex';
+  doiContainer.style.alignItems = 'center';
+  doiContainer.style.marginTop = '5px';
+  // doiContainer.style.marginLeft = '8px';
+  // doiContainer.style.verticalAlign = ''; // Not needed for block/flex
+  doiContainer.style.height = '18px';       // Set container height
+  doiContainer.hidden = true;
+
+  // Append elDOI to the container (it's already configured)
+  // Ensure elDOI's own marginLeft is 0 as the container now handles it.
+  elDOI.style.marginLeft = '0';
+  doiContainer.appendChild(elDOI);
 
   elIconLink.insertAdjacentElement("afterbegin", elIcon);
   elTitle.insertAdjacentElement("beforebegin", elIconLink);
-  elTitle.insertAdjacentElement("afterend", elDOI);
+  // Insert the container after the title
+  elTitle.insertAdjacentElement("afterend", doiContainer);
 
   let doi = null;
   let statusToUse = IMG_STATUS.NO_DOI; // Default to NO_DOI
@@ -490,17 +533,123 @@ function UpdateStatus(
   oldURL
 ) {
   // Update icon properties
-  elIcon.src = status.src;
+  elIcon.innerHTML = status.svg; // Use innerHTML for SVG
   elIcon.title = status.title;
 
-  // If DOI was successfully found, update links and DOI display
-  if (status.success) {
-    elDOI.hidden = false; // Show the DOI input
-    elDOI.value = doi; // Set DOI value
-    elDOI.size = doi.length; // Adjust size to fit DOI
-    elTitle.href = newURL; // Update article title link to Sci-Hub
-    elIconLink.href = oldURL; // Make icon link to original article URL
+  // Get the container for DOI elements (which is elDOI's parentNode if setup correctly)
+  const doiContainer = elDOI.parentNode;
+
+  // Manage DOI input field and Copy button visibility
+  if (status.success && doi) {
+    if (doiContainer && doiContainer.classList.contains('doi-container')) {
+      doiContainer.hidden = false; // Show the container
+    }
+    elDOI.hidden = false; // Show DOI input within the container
+    elDOI.value = doi;
+    elDOI.size = doi.length - 3; // Cap at 15, effectively halving the previous max of 30
+
+    elTitle.href = newURL;
+    elIconLink.href = oldURL;
+
+    // Create or get existing copy button (now inside doiContainer)
+    let copyButton = elDOI.nextElementSibling;
+    if (!copyButton || !copyButton.classList.contains('scihub-scholar-copy-button')) {
+      copyButton = document.createElement('button');
+      copyButton.classList.add('scihub-scholar-copy-button');
+      const copyIcon = document.createElement('span'); // Changed from <img> to <span>
+
+      copyIcon.innerHTML = COPY_ICON_SVG;
+      // copyIcon.alt = "Copy";
+      copyIcon.style.height = '14px';    // Icon SVG container height
+      copyIcon.style.width = '14px';     // Icon SVG container width
+      copyIcon.style.display = 'inline-flex';
+      copyIcon.style.alignItems = 'center';
+      copyIcon.style.justifyContent = 'center';
+
+      copyButton.appendChild(copyIcon);
+      copyButton.title = 'Copy DOI to clipboard';
+
+      // Styling for copyButton
+      copyButton.style.boxSizing = 'border-box';
+      copyButton.style.height = '18px'; // Match elDOI's explicit height
+      copyButton.style.border = '1px solid #ccc';
+      copyButton.style.borderLeft = 'none';
+      copyButton.style.borderTopLeftRadius = '0';
+      copyButton.style.borderBottomLeftRadius = '0';
+      copyButton.style.borderTopRightRadius = '4px';
+      copyButton.style.borderBottomRightRadius = '4px';
+
+      copyButton.style.backgroundColor = '#e9e9e9'; // Darker background than elDOI
+
+      copyButton.style.paddingTop = '0';
+      copyButton.style.paddingBottom = '0';
+      copyButton.style.paddingLeft = '8px';  // Further minimized horizontal padding
+      copyButton.style.paddingRight = '8px'; // Further minimized horizontal padding
+
+      copyButton.style.minWidth = 'min-content'; // Ensure button is not too wide
+      copyButton.style.marginLeft = '0';
+      copyButton.style.marginRight = '0';
+      copyButton.style.cursor = 'pointer';
+
+      // Use flex to center the icon inside the button
+      copyButton.style.display = 'inline-flex';
+      copyButton.style.alignItems = 'center';
+      copyButton.style.justifyContent = 'center';
+      // copyButton.style.lineHeight = '1'; // Not strictly needed with flex centering
+
+      copyButton.addEventListener('click', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const doiToCopy = elDOI.value;
+        try {
+          await navigator.clipboard.writeText(doiToCopy);
+          const originalIconHTML = copyIcon.innerHTML; // Should be COPY_ICON_SVG
+          copyIcon.innerHTML = CHECK_ICON_SVG;
+          // Ensure CHECK_ICON_SVG is also styled for 14px if it's different from BOOK_ICON_SVG
+          // If CHECK_ICON_SVG is BOOK_ICON_SVG (which is 1em), it might look too big.
+          // For now, assuming CHECK_ICON_SVG is also appropriately sized or will be.
+          copyButton.title = 'Copied!';
+
+          setTimeout(() => {
+            copyIcon.innerHTML = originalIconHTML; // Restore original (COPY_ICON_SVG)
+            copyButton.title = 'Copy DOI to clipboard';
+          }, 1500);
+        } catch (err) {
+          console.error('Failed to copy DOI: ', err);
+          copyButton.title = 'Failed to copy!';
+          setTimeout(() => {
+            copyButton.title = 'Copy DOI to clipboard';
+          }, 1500);
+        }
+      });
+
+      // Append copyButton to the doiContainer, after elDOI
+      if (doiContainer) {
+        doiContainer.appendChild(copyButton);
+      } else {
+        // Fallback if container somehow isn't the parent (should not happen with new structure)
+        elDOI.parentNode.insertBefore(copyButton, elDOI.nextSibling);
+      }
+    }
+    copyButton.hidden = false;
+  } else {
+    // Hide DOI input, its container, and copy button if no success
+    if (doiContainer && doiContainer.classList.contains('doi-container')) {
+      doiContainer.hidden = true;
+    }
+    elDOI.hidden = true; // Also hide input just in case
+
+    // Attempt to find and hide copy button if it exists within the container or as a sibling
+    let existingCopyButton;
+    if (doiContainer && doiContainer.contains(elDOI)) {
+      existingCopyButton = elDOI.nextElementSibling; // Assumes it's a direct sibling inside the container
+    } else {
+      existingCopyButton = elDOI.nextElementSibling; // Fallback to old structure if container is not parent
+    }
+
+    if (existingCopyButton && existingCopyButton.classList.contains('scihub-scholar-copy-button')) {
+      existingCopyButton.hidden = true;
+    }
   }
-  // If DOI not found or error, elTitle.href remains original, elIconLink has no href yet (or keeps original if set)
-  // and elDOI remains hidden. The icon src/title reflect the status (e.g., NO_DOI, SEARCHING).
 }
