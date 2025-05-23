@@ -12,8 +12,8 @@
 	},
 	"web_accessible_resources": [
 		"icons/refresh.svg",
-		"icons/award.svg",
-		"icons/book.svg"
+		"icons/book.svg",
+		"icons/ban.svg"
 	],
 	"permissions": [
 		"https://api.crossref.org/works?query=*",

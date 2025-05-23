@@ -109,3 +109,4 @@ dist
 
 # Builds
 web-ext-artifacts/*
+.DS_Store

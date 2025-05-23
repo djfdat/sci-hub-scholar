@@ -6,9 +6,31 @@
   </head>
 
   <body>
-		<label id="CachedDOIsCount">0</label>
-		<button id="RefreshCacheSize" type="onClick">RefreshCacheSize</button>
-		<button id="ClearCachedDOIs" type="onClick">Clear Cached DOIs</button>
+    <h2>Cache Management</h2>
+		<p>
+      <label>Currently Cached DOIs: <span id="CachedDOIsCount">0</span></label>
+    </p>
+		<p>
+      <button id="RefreshCacheSize">Refresh Cache Size</button>
+      <button id="ClearCachedDOIs">Clear Cached DOIs</button>
+    </p>
+
+    <hr />
+
+    <h2>Custom Sci-Hub Domain</h2>
+    <p>
+      <label for="customSciHubUrl">Custom Sci-Hub URL:</label>
+      <input type="text" id="customSciHubUrl" name="customSciHubUrl" size="40" placeholder="https://sci-hub.example.com" />
+    </p>
+    <p>
+      <button id="saveCustomUrl">Save Custom URL</button>
+      <span id="saveStatus" style="margin-left: 10px;"></span>
+    </p>
+    <p style="font-size: small; color: grey;">
+      Enter a full custom Sci-Hub domain (e.g., https://sci-hub.se).
+      This will override the automatically fetched URL. Leave blank to revert to automatic/default.
+    </p>
+
     <script src="options.js"></script>
   </body>
 </html>
